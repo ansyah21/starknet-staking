@@ -1,0 +1,49 @@
+# PoC K-1 — Starknet Staking `update_rewards` tanpa cek caller
+#
+# Menjalankan SATU test PoC audit (bukan suite penuh):
+#   snforge test poc_k1_update_rewards_arbitrary_caller_captures_full_block_reward --exact
+#
+# Toolchain disamakan dengan yang dipakai saat PoC ditulis + type-check lokal:
+#   snforge 0.49.0, scarb 2.12.0 (upstream memakai scarb 2.12.2 di CI-nya).
+# Install memakai action yang sama dengan CI upstream repo ini
+# (.github/workflows/test.yaml): foundry-rs/setup-snfoundry + software-mansion/setup-scarb.
+#
+# CATATAN MEMORI: kompilasi target test di VM 6 GB OOM 3x (peak scarb RSS ~5,2 GB).
+# Runner ubuntu-latest GitHub punya 7 GB RAM — kemungkinan muat, tapi TIDAK dijamin.
+# Bila job ini OOM-killed juga, jalurnya: runner lebih besar (self-hosted / 16 GB)
+# atau harness minimal (tanpa suite flow-test penuh).
+
+name: PoC K-1
+
+on:
+  push:
+    branches: [poc-k1]
+  workflow_dispatch:
+
+jobs:
+  poc-k1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: foundry-rs/setup-snfoundry@v3
+        with:
+          starknet-foundry-version: "0.49.0"
+
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: "2.12.0"
+
+      - name: Toolchain versions
+        run: |
+          snforge --version
+          scarb --version
+          free -h
+
+      - name: Run PoC K-1 test
+        run: snforge test poc_k1_update_rewards_arbitrary_caller_captures_full_block_reward --exact
+
+      - name: Memory after test
+        if: always()
+        run: free -h
