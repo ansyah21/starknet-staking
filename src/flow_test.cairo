@@ -11,4 +11,5 @@ mod test;
 #[cfg(test)]
 // PoC audit (track staking-bridge): bukan bagian upstream.
 mod poc_k1_update_rewards;
+#[cfg(test)]
 pub(crate) mod utils;
